@@ -1,12 +1,26 @@
 from BaseDataHandler import BaseDataHandler
-from statistics import mean as stat_mean,median as stat_med,mode as stat_mode
+from statistics import mean as stat_mean,median as stat_med,mode as stat_mode, pstdev as stat_pstdev, stdev as stat_stdev, variance as stat_svar, pvariance as stat_pvar
 
 class CentralTendecyCalculator(BaseDataHandler):
-    def mean(self,index):
-        return stat_mean(self.data[index])
 
-    def median(self,index):
-        return stat_med(self.data[index])
+    def mean(self):
+        return stat_mean(self.get_data())
 
-    def mode(self,index):
-        return stat_mode(self.data[index])
+    def median(self):
+        return stat_med(self.get_data())
+
+    def mode(self):
+        return stat_mode(self.get_data())
+
+    def sd(self,mode):
+        if mode == 1:
+            return stat_pstdev(self.get_data())
+        else:
+            return stat_stdev(self.get_data())
+
+    def var(self,mode):
+        if mode == 1:
+            return stat_pvar(self.get_data())
+        else:
+            return stat_svar(self.get_data())
+        

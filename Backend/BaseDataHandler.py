@@ -1,10 +1,21 @@
 #FATHER OF ALL CLASSES
 class BaseDataHandler():
-    __self.data_list = []
-
     def __init__(self):
-        __self.data_list[0] = 0
+        self.__data_list = [0]
 
-    #Modifies data (takes the data group, the index of the data, if no data is passed then it removes data)
-    def mod_data(self,index,data = None):
-        self.data_list[index] = data
+    def mod_data(self, index, data):
+        if not isinstance(data,(int,float)):
+            return
+
+        if index < 0:
+            raise IndexError("Index out of range")
+        
+        if index >= len(self.__data_list):
+            diff = index - len(self.__data_list)
+            for i in range(diff - 1):
+                self.__data_list.append(0)
+
+        self.__data_list[index] = data
+
+    def get_data(self):
+        return self.__data_list
