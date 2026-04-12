@@ -12,6 +12,7 @@ class CentralTendecyCalculator(BaseDataHandler):
     def mode(self):
         return stat_mode(self.get_data())
 
+    #For Both items below: mode 1 is population and 2 is sample
     def sd(self,mode):
         if mode == 1:
             return stat_pstdev(self.get_data())
