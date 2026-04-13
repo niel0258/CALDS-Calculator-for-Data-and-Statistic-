@@ -28,7 +28,7 @@ class FileApp(QMainWindow):
         label_header.setAlignment(Qt.AlignmentFlag.AlignCenter)
         label_header.setStyleSheet("""
                                    font-size: 30px;
-                                   font-family arial;
+                                   font-family: HYWenHei;
                                    font-weight: bold;
                                    """)
 
@@ -45,7 +45,7 @@ class FileApp(QMainWindow):
         btn_import = QPushButton("Import File")
         btn_import.setStyleSheet("""
                                 QPushButton {
-                                background-color: #ff9f00;
+                                background-color: rgba(131, 9, 237, 1);
                                 color: black;
                                 font-size: 15px;
                                 font-family arial;
@@ -54,7 +54,7 @@ class FileApp(QMainWindow):
                                 }
 
                                 QPushButton:hover {
-                                background-color: rgba(30, 74, 141, 0.900);
+                                background-color: rgba(210, 10, 255, 0.900);
                                 }
                                 """)
         
@@ -65,13 +65,13 @@ class FileApp(QMainWindow):
         btn_new.setFixedSize(200, 50)
         btn_new.setStyleSheet("""
                               QPushButton {
-                              background-color: rgba(28, 134, 184, 0.925);
+                              background-color: rgba(30, 74, 141, 0.900);
                               font-size: 14px;
                               font-family: arial;
                               border-radius: 10px;
                               }
                               QPushButton:hover {
-                              background-color: rgba(30, 74, 141, 0.900);
+                              background-color: rgba(28, 134, 184, 0.925);
                               }
                               """)
         btn_new.clicked.connect(self.go_to_tables)
@@ -80,7 +80,7 @@ class FileApp(QMainWindow):
         exit_btn.setFixedSize(100, 25)
         exit_btn.setStyleSheet("""
                                QPushButton:hover {
-                               background-color: rgba(35, 35, 35, 0.500);
+                               background-color: rgba(255, 47, 0, 1);
                                }
                                """)
         exit_btn.clicked.connect(QApplication.instance().quit)
@@ -100,6 +100,7 @@ class FileApp(QMainWindow):
     def init_table_screen(self):
         self.table_page = QWidget()
         main_layout = QVBoxLayout(self.table_page)
+        self.stack.addWidget(self.table_page)
         
         # Control Buttons
 
@@ -107,10 +108,18 @@ class FileApp(QMainWindow):
         self.add_btn = QPushButton("Add Table (Max 3)")
         self.add_btn.setStyleSheet("""
                                    QPushButton {
-                                   background-color: darkblue;
+                                   background-color: blue;
                                    }
                                    """)
         self.add_btn.clicked.connect(self.add_new_table)
+        self.remove_btn = QPushButton("Remove Table")
+        self.remove_btn.setStyleSheet("""
+                                   QPushButton {
+                                   background-color: darkblue;
+                                   }
+                                   """)
+        self.remove_btn.clicked.connect(self.remove_table)
+
 
         back_btn = QPushButton("Back")
         back_btn.setStyleSheet ("""
@@ -129,6 +138,7 @@ class FileApp(QMainWindow):
         formula_btn.clicked.connect(lambda: self.open_formula_menu(formula_btn))
         
         controls.addWidget(self.add_btn)
+        controls.addWidget(self.remove_btn)
         controls.addWidget(back_btn)
         controls.addWidget(formula_btn)
         main_layout.addLayout(controls)
@@ -146,9 +156,31 @@ class FileApp(QMainWindow):
         
         scroll.setWidget(self.scroll_content)
         main_layout.addWidget(scroll)
+        
+        self.results_container = QWidget()
+        results_layout = QVBoxLayout(self.results_container)
+        self.results_container.setObjectName("Border")
+        self.results_container.setStyleSheet("""
+                                            #Border {
+                                                background-color: orange;
+                                                border-radius: 12px;
+                                                padding: 12px;
+                                            }
+                                            """)
 
-        self.table_list = []
-        self.stack.addWidget(self.table_page)
+        self.results_label = QLabel("Results will appear here")
+        self.results_label.setStyleSheet("""
+                                        background-color: transparent;
+                                        color: black;
+                                        """)
+        self.results_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+
+        results_layout.addWidget(self.results_label)
+
+        self.results_container.setVisible(False)  # hidden at start
+        main_layout.addWidget(self.results_container)
+
+        
 
     def handle_import(self):
         # file, _ = QFileDialog.getOpenFileName(self, "Open File")
@@ -167,6 +199,10 @@ class FileApp(QMainWindow):
         self.add_btn.setEnabled(True)
         self.add_new_table() 
         self.stack.setCurrentIndex(1)
+        self.results_container.setVisible(False)
+        self.results_label.setText("")
+        self.add_btn.setEnabled(True)
+        self.add_btn.setVisible(True)
 
     def open_formula_menu(self, button):
         
@@ -204,6 +240,8 @@ class FileApp(QMainWindow):
                 values.append(float(item.text()))
         
         if not values:
+            self.results_container.setVisible(True)
+            self.results_label.setText(" No numeric data found in Column B")
             print(" No numeric data found in Column B")
             return
         
@@ -214,7 +252,8 @@ class FileApp(QMainWindow):
         elif formula_type == "MAX":
             result = max(values)
 
-        print(f"Result of {formula_type}: {result}")
+        self.results_container.setVisible(True)
+        self.results_label.setText(f"{formula_type} result: {result}")
 
 
 
@@ -236,9 +275,28 @@ class FileApp(QMainWindow):
             
             self.tables_container.addWidget(table)
             self.table_list.append(table)
+            self.remove_btn.setVisible(False)
             
             if len(self.table_list) == 3:
                 self.add_btn.setEnabled(False)
+                self.add_btn.setVisible(False)
+        
+        if len(self.table_list) > 1:
+            self.remove_btn.setVisible(True)
+
+    
+    def remove_table(self):
+        if not self.table_list:
+            return 
+        if len(self.table_list) == 2:
+            self.remove_btn.setVisible(False)
+
+        table = self.table_list.pop()
+        self.tables_container.removeWidget(table)
+        table.deleteLater()
+        if len(self.table_list) < 3:
+            self.add_btn.setEnabled(True)
+            self.add_btn.setVisible(True)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
