@@ -3,6 +3,7 @@ from scipy import stats
 
 class StatRelationCalculator(BaseDataHandler):
     def __init__(self):
+        super().__init__() 
         self._slope = None
         self._intercept = None
         self._r = None

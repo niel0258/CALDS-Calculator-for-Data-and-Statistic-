@@ -2,6 +2,8 @@ from BaseDataHandler import BaseDataHandler
 from statistics import mean as stat_mean,median as stat_med,mode as stat_mode, pstdev as stat_pstdev, stdev as stat_stdev, variance as stat_svar, pvariance as stat_pvar
 
 class CentralTendencyCalculator(BaseDataHandler):
+    def __init__(self):
+        super().__init__() 
 
     def mean(self):
         return stat_mean(self.get_data())

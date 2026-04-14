@@ -1,6 +1,9 @@
-from CentralTendecyCalculator import CentralTendecyCalculator
+from CentralTendencyCalculator import CentralTendencyCalculator
 
-class TestStatisticCalculator(CentralTendecyCalculator):
+class TestStatisticCalculator(CentralTendencyCalculator):
+    def __init__(self):
+        super().__init__() 
+
     def __zt_test(self,val_tested,z_or_t):#1 means z, 2 means t
 
         return (val_tested - self.mean()) / (self.sd(mode) /( len(self.get_data()))**0.5)
