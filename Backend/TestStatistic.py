@@ -1,7 +1,6 @@
-from BaseDataHandler import BaseDataHandler
 from CentralTendecyCalculator import CentralTendecyCalculator
 
-class TestStatisticCalculator(BaseDataHandler,CentralTendecyCalculator):
+class TestStatisticCalculator(CentralTendecyCalculator):
     def __zt_test(self,val_tested,z_or_t):#1 means z, 2 means t
 
         return (val_tested - self.mean()) / (self.sd(mode) /( len(self.get_data()))**0.5)
