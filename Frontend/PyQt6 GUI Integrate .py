@@ -6,6 +6,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QAction
 from DataHandler import DataHandler
 #PAKYU YOKO NA MABUHAY
+#FUCK YOU SHIT 
 
 class FileApp(QMainWindow):
     def __init__(self):
@@ -198,7 +199,7 @@ class FileApp(QMainWindow):
             t = self.IntegratedTable(label)
 
             # Assign a DataHandler to the table
-            t.handler = DataHandler(label)  #add this
+            t.handler = DataHandler(label)
 
             self.table_list.append(t)
             self.tables_layout.addWidget(t)
@@ -216,16 +217,18 @@ class FileApp(QMainWindow):
             # Helper to safely execute and display
             def safe_exec(func, name):
                 try:
-                    res = func()#commentan mo
-                    self.result_display.setText(f"{name}: {res:.4f}")
+                    res = func() #Result is the value return by the function
+                    self.result_display.setText(f"{name}: {res:.4f}") #Rounded to 4 decimal places
                 except Exception:
                     self.result_display.setText("Result: Invalid input / output")
 
             menu.addAction("Mean (Table X)", lambda: safe_exec(h_x.mean, "Mean"))
+            #ADD CENTRAL TENDENCIES TABLE X
             menu.addAction("Std Dev (Table X)", lambda: safe_exec(lambda: h_x.sd(2), "SD"))
             
             # Pearson's R appears if 2nd table exists
             if len(self.table_list) >= 2:
+                #ADD CENTRAL TENDENCIES FOR TABLE Y
                 menu.addSeparator()
                 data_y = self.table_list[1].handler.get_data()
                 menu.addAction("Pearson R (X vs Y)", 
