@@ -1,4 +1,4 @@
-import sys, csv
+import sys
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout,
     QPushButton, QLabel, QStackedWidget, QFileDialog,
@@ -7,8 +7,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtCore import Qt
 from Backend.DataHandler import DataHandler
- 
- 
+
 class FileApp(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -22,41 +21,41 @@ class FileApp(QMainWindow):
         self.make_menu()
         self.make_workspace()
         self.apply_theme()
- 
+
     # ── Menu screen ────────────────────────────────────────────────────────────
     def make_menu(self):
         page = QWidget()
         layout = QVBoxLayout(page)
- 
+
         title = QLabel("CalDS")
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         title.setStyleSheet("font-size: 100px; font-weight: bold;")
- 
+
         subtitle = QLabel("Calculator for Data and Statistic System")
         subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
         subtitle.setStyleSheet("color:#888; font-size:16px;")
- 
+
         btn_new = QPushButton("Create New File")
         btn_new.setFixedSize(200, 50)
         btn_new.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_new.clicked.connect(self.go_to_tables)
- 
+
         btn_import = QPushButton("Import File")
         btn_import.setFixedSize(200, 50)
         btn_import.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_import.clicked.connect(self.handle_import)
- 
+
         btn_exit = QPushButton("Exit")
         btn_exit.setFixedSize(100, 30)
         btn_exit.setCursor(Qt.CursorShape.PointingHandCursor)
         btn_exit.clicked.connect(QApplication.instance().quit)
- 
+
         btn_row = QHBoxLayout()
         btn_row.addStretch()
         btn_row.addWidget(btn_import)
         btn_row.addWidget(btn_new)
         btn_row.addStretch()
- 
+
         layout.addStretch()
         layout.addWidget(title)
         layout.addWidget(subtitle)
@@ -65,15 +64,15 @@ class FileApp(QMainWindow):
         layout.addSpacing(10)
         layout.addWidget(btn_exit, alignment=Qt.AlignmentFlag.AlignCenter)
         layout.addStretch()
- 
+
         self.stack.addWidget(page)
- 
+
     # ── Workspace screen ───────────────────────────────────────────────────────
     def make_workspace(self):
         page = QWidget()
         main = QVBoxLayout(page)
         self.stack.addWidget(page)
- 
+
         # Header bar
         header = QFrame()
         header.setObjectName("Header")
@@ -87,7 +86,7 @@ class FileApp(QMainWindow):
         h.addStretch()
         h.addWidget(self.status)
         main.addWidget(header)
- 
+
         # Toolbar
         row = QHBoxLayout()
         self.add_btn = QPushButton("Add Table (Max 3)")
@@ -98,7 +97,7 @@ class FileApp(QMainWindow):
         btn_import   = QPushButton("Import CSV")
         btn_theme    = QPushButton("Theme")
         btn_back     = QPushButton("Back")
- 
+
         self.add_btn.clicked.connect(self.add_new_table)
         btn_remove.clicked.connect(self.remove_table)
         btn_clear.clicked.connect(self.clear_table)
@@ -107,21 +106,21 @@ class FileApp(QMainWindow):
         btn_import.clicked.connect(self.handle_import)
         btn_theme.clicked.connect(self.switch_theme)
         btn_back.clicked.connect(lambda: self.stack.setCurrentIndex(0))
- 
+
         for b in [self.add_btn, btn_remove, btn_clear, btn_formula,
                   btn_export, btn_import, btn_theme, btn_back]:
             b.setCursor(Qt.CursorShape.PointingHandCursor)
             row.addWidget(b)
         row.addStretch()
- 
+
         main.addLayout(row)
- 
+
         # Result display
         self.result_display = QLabel("Add a table and enter data to begin.")
         self.result_display.setWordWrap(True)
         self.result_display.setObjectName("ResultDisplay")
         main.addWidget(self.result_display)
- 
+
         # Scrollable table area
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
@@ -129,7 +128,7 @@ class FileApp(QMainWindow):
         self.tables_layout = QHBoxLayout(self.scroll_content)
         scroll.setWidget(self.scroll_content)
         main.addWidget(scroll)
- 
+
     # ── IntegratedTable ────────────────────────────────────────────────────────
     class IntegratedTable(QTableWidget):
         def __init__(self, label):
@@ -141,7 +140,7 @@ class FileApp(QMainWindow):
             self.itemChanged.connect(self.sync)
             self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
             self.customContextMenuRequested.connect(self.show_cell_menu)
- 
+
         def sync(self, item):
             try:
                 text = item.text().strip()
@@ -151,7 +150,7 @@ class FileApp(QMainWindow):
                     self.handler.mod_data(item.row(), float(text))
             except (ValueError, AttributeError):
                 pass
- 
+
         def show_cell_menu(self, pos):
             item = self.itemAt(pos)
             if item is None:
@@ -164,8 +163,9 @@ class FileApp(QMainWindow):
                 item.setText("")
                 self.handler.mod_data(item.row(), 0)
                 self.itemChanged.connect(self.sync)
- 
+
     # ── Table management ───────────────────────────────────────────────────────
+
     def add_new_table(self):
         if len(self.table_list) >= 3:
             return
@@ -179,14 +179,16 @@ class FileApp(QMainWindow):
         if len(self.table_list) == 3:
             self.add_btn.setEnabled(False)
         self.status.setText(f"Table created ({len(self.table_list)} total)")
- 
+
     def select_table(self, table):
         self.active_table = table
         self.status.setText("Table selected")
- 
+
     def remove_table(self):
+        #error handling for no tables
         if not self.table_list:
             return
+
         table = self.active_table or self.table_list[-1]
         self.tables_layout.removeWidget(table)
         table.deleteLater()
@@ -194,14 +196,14 @@ class FileApp(QMainWindow):
         self.active_table = self.table_list[-1] if self.table_list else None
         self.add_btn.setEnabled(True)
         self.status.setText(f"Table removed ({len(self.table_list)} remaining)")
- 
+
     def clear_table(self):
         if self.active_table:
             self.active_table.clearContents()
             label = self.active_table.horizontalHeaderItem(0).text()
             self.active_table.handler = DataHandler(label)
             self.status.setText("Table cleared")
- 
+
     # ── CSV import / export ────────────────────────────────────────────────────
     def handle_import(self):
         file, _ = QFileDialog.getOpenFileName(self, "Import CSV", "", "CSV Files (*.csv);;All Files (*)")
@@ -211,6 +213,7 @@ class FileApp(QMainWindow):
         errors = []
         for table in self.table_list:
             try:
+                # Uses DataHandler.import_data — matches column by data name
                 table.handler.import_data(file)
                 data = table.handler.get_data()
                 table.itemChanged.disconnect(table.sync)
@@ -227,44 +230,46 @@ class FileApp(QMainWindow):
         else:
             self.result_display.setText("CSV imported successfully.")
             self.status.setText("CSV imported")
- 
+
     def export_csv(self):
-        if not self.active_table:
-            self.result_display.setText("No table selected for export.")
+        if not self.table_list:#check no tables
+            self.result_display.setText("No tables to export.")
             return
         file, _ = QFileDialog.getSaveFileName(self, "Export CSV", "", "CSV (*.csv)")
         if not file:
             return
-        with open(file, "w", newline="") as f:
-            writer = csv.writer(f)
-            writer.writerow([self.active_table.horizontalHeaderItem(0).text()])
-            for r in range(self.active_table.rowCount()):
-                item = self.active_table.item(r, 0)
-                writer.writerow([item.text() if item else ""])
-        self.status.setText("CSV exported successfully")
-        self.result_display.setText("CSV exported successfully.")
- 
+        try:
+            primary = self.table_list[0].handler
+            # Pass remaining tables as other_datas if they exist
+            others = tuple(t.handler for t in self.table_list[1:]) or None
+            primary.export_data(file, other_datas=others)
+            self.status.setText("CSV exported successfully")
+            self.result_display.setText("CSV exported successfully.")
+        except Exception as e:
+            self.status.setText("Export failed")
+            self.result_display.setText(f"Export error: {e}")
+
     # ── Formula menu ───────────────────────────────────────────────────────────
     def show_formula_menu(self, btn):
         if not self.table_list:
             self.result_display.setText("Invalid: No tables exist.")
             return
- 
+
         menu = QMenu(self)
         h_x = self.table_list[0].handler
- 
+
         def safe_exec(func, name):
             try:
                 res = func()
                 self.result_display.setText(f"{name}: {res:.4f}")
             except Exception:
                 self.result_display.setText("Result: Invalid input / output")
- 
+
         menu.addAction("Mean (Table X)",    lambda: safe_exec(h_x.mean, "Mean"))
         menu.addAction("Median (Table X)",  lambda: safe_exec(h_x.median, "Median"))
         menu.addAction("Mode (Table X)",    lambda: safe_exec(h_x.mode, "Mode"))
         menu.addAction("Std Dev (Table X)", lambda: safe_exec(lambda: h_x.sd(2), "SD"))
- 
+
         if len(self.table_list) >= 2:
             h_y = self.table_list[1].handler
             menu.addAction("Mean (Table Y)",    lambda: safe_exec(h_y.mean, "Mean"))
@@ -275,23 +280,23 @@ class FileApp(QMainWindow):
             data_y = self.table_list[1].handler.get_data()
             menu.addAction("Pearson R (X vs Y)",
                            lambda: safe_exec(lambda: h_x.pearson_r(data_y), "Pearson R"))
- 
+
         menu.exec(btn.mapToGlobal(btn.rect().bottomLeft()))
- 
+
     # ── Navigation ─────────────────────────────────────────────────────────────
     def go_to_tables(self):
         if not self.table_list:
             self.add_new_table()
         self.stack.setCurrentIndex(1)
- 
+
     # ── Theme ──────────────────────────────────────────────────────────────────
     def switch_theme(self):
         self.theme_mode = "light" if self.theme_mode == "dark" else "dark"
         self.apply_theme()
- 
+
     def apply_theme(self):
         self.setStyleSheet(self.dark() if self.theme_mode == "dark" else self.light())
- 
+
     def dark(self):
         return """
         QWidget { background:#0B0B0B; color:#EAEAEA; }
@@ -333,7 +338,7 @@ class FileApp(QMainWindow):
         }
         QScrollArea { border:none; }
         """
- 
+
     def light(self):
         return """
         QWidget { background:#F5F5F5; color:#111; }
@@ -374,8 +379,8 @@ class FileApp(QMainWindow):
         }
         QScrollArea { border:none; }
         """
- 
- 
+
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = FileApp()
