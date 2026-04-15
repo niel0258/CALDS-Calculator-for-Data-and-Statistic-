@@ -3,10 +3,43 @@ from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout,
     QPushButton, QLabel, QStackedWidget, QFileDialog,
     QTableWidget, QHBoxLayout, QHeaderView, QScrollArea,
-    QFrame, QTableWidgetItem, QMenu
+    QFrame, QTableWidgetItem, QMenu, QDialog, QDoubleSpinBox
 )
+
 from PyQt6.QtCore import Qt
 from Backend.DataHandler import DataHandler
+
+class InputDataWindow(QDialog):
+    def __init__(self, parent=None, title="Input", prompt="Enter value:"):
+        super().__init__(parent)
+        self.setWindowTitle(title)
+        self.setFixedSize(300, 150)
+        self.value = None
+
+        layout = QVBoxLayout()
+        self.label = QLabel(prompt)
+        self.spinbox = QDoubleSpinBox()
+        self.spinbox.setRange(-1e9, 1e9)
+        self.spinbox.setDecimals(3)
+        self.spinbox.setValue(0.0)
+
+        btn_row = QHBoxLayout()
+        btn_ok = QPushButton("OK")
+        btn_cancel = QPushButton("Cancel")
+        btn_ok.clicked.connect(self.accept_value)
+        btn_cancel.clicked.connect(self.reject)
+
+        btn_row.addWidget(btn_ok)
+        btn_row.addWidget(btn_cancel)
+
+        layout.addWidget(self.label)
+        layout.addWidget(self.spinbox)
+        layout.addLayout(btn_row)
+        self.setLayout(layout)
+
+    def accept_value(self):
+        self.value = self.spinbox.value()
+        self.accept()
 
 class FileApp(QMainWindow):
     def __init__(self):
@@ -17,12 +50,13 @@ class FileApp(QMainWindow):
         self.setCentralWidget(self.stack)
         self.table_list = []
         self.active_table = None
+        self.input_windows = None
         self.theme_mode = "dark"
         self.make_menu()
         self.make_workspace()
         self.apply_theme()
 
-    # ── Menu screen ────────────────────────────────────────────────────────────
+    #Menu Screen
     def make_menu(self):
         page = QWidget()
         layout = QVBoxLayout(page)
@@ -67,11 +101,14 @@ class FileApp(QMainWindow):
 
         self.stack.addWidget(page)
 
-    # ── Workspace screen ───────────────────────────────────────────────────────
+    #  Workspace screen
     def make_workspace(self):
         page = QWidget()
         main = QVBoxLayout(page)
         self.stack.addWidget(page)
+
+        #
+        self._max_tables = 2
 
         # Header bar
         header = QFrame()
@@ -89,7 +126,7 @@ class FileApp(QMainWindow):
 
         # Toolbar
         row = QHBoxLayout()
-        self.add_btn = QPushButton("Add Table (Max 3)")
+        self.add_btn = QPushButton(f"Add Table (Max {self._max_tables})")
         btn_remove   = QPushButton("Remove")
         btn_clear    = QPushButton("Clear")
         btn_formula  = QPushButton("Formula")
@@ -129,7 +166,7 @@ class FileApp(QMainWindow):
         scroll.setWidget(self.scroll_content)
         main.addWidget(scroll)
 
-    # ── IntegratedTable ────────────────────────────────────────────────────────
+    # Table Integrated
     class IntegratedTable(QTableWidget):
         def __init__(self, label):
             super().__init__(32, 1)
@@ -164,10 +201,10 @@ class FileApp(QMainWindow):
                 self.handler.mod_data(item.row(), 0)
                 self.itemChanged.connect(self.sync)
 
-    # ── Table management ───────────────────────────────────────────────────────
+    # Table management 
 
     def add_new_table(self):
-        if len(self.table_list) >= 3:
+        if len(self.table_list) >= self._max_tables:
             return
         label = ["Data X", "Data Y", "Data Z"][len(self.table_list)]
         t = self.IntegratedTable(label)
@@ -176,7 +213,7 @@ class FileApp(QMainWindow):
         self.table_list.append(t)
         self.tables_layout.addWidget(t)
         self.select_table(t)
-        if len(self.table_list) == 3:
+        if len(self.table_list) == self._max_tables:
             self.add_btn.setEnabled(False)
         self.status.setText(f"Table created ({len(self.table_list)} total)")
 
@@ -204,7 +241,7 @@ class FileApp(QMainWindow):
             self.active_table.handler = DataHandler(label)
             self.status.setText("Table cleared")
 
-    # ── CSV import / export ────────────────────────────────────────────────────
+    # CSV import / export 
     def handle_import(self):
         file, _ = QFileDialog.getOpenFileName(self, "Import CSV", "", "CSV Files (*.csv);;All Files (*)")
         if not file:
@@ -249,7 +286,32 @@ class FileApp(QMainWindow):
             self.status.setText("Export failed")
             self.result_display.setText(f"Export error: {e}")
 
-    # ── Formula menu ───────────────────────────────────────────────────────────
+    def show_ttest_window(self,table):
+        dialog = InputDataWindow(
+            self,
+            title="T-Test Input",
+            prompt="Enter value (x):"
+        )
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            try:
+                res = table.t_test(dialog.value)
+                self.result_display.setText(f"T-Test (x={dialog.value}): {res:.4f}")
+            except Exception as e:
+                self.result_display.setText(f"T-Test error: {e}")
+
+    def show_ztest_window(self,table):
+        dialog = InputDataWindow(
+            self,
+            title="Z-Test Input",
+            prompt="Enter value (x):"
+        )
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            try:
+                res = table.z_test(dialog.value)
+                self.result_display.setText(f"Z-Test (x={dialog.value}): {res:.4f}")
+            except Exception as e:
+                self.result_display.setText(f"Z-Test error: {e}")
+    # Formula menu
     def show_formula_menu(self, btn):
         if not self.table_list:
             self.result_display.setText("Invalid: No tables exist.")
@@ -269,19 +331,25 @@ class FileApp(QMainWindow):
         menu.addAction("Median (Table X)",  lambda: safe_exec(h_x.median, "Median"))
         menu.addAction("Mode (Table X)",    lambda: safe_exec(h_x.mode, "Mode"))
         menu.addAction("Std Dev (Table X)", lambda: safe_exec(lambda: h_x.sd(2), "SD"))
+        menu.addAction("T-Test (Table X)", lambda: self.show_ttest_window(h_x))
+        menu.addAction("Z-Test (Table X)", lambda: self.show_ztest_window(h_x))
 
-        if len(self.table_list) >= 2:
+        if len(self.table_list) == 2:
             h_y = self.table_list[1].handler
             menu.addAction("Mean (Table Y)",    lambda: safe_exec(h_y.mean, "Mean"))
             menu.addAction("Median (Table Y)",  lambda: safe_exec(h_y.median, "Median"))
             menu.addAction("Mode (Table Y)",    lambda: safe_exec(h_y.mode, "Mode"))
             menu.addAction("Std Dev (Table Y)", lambda: safe_exec(lambda: h_y.sd(2), "SD"))
+            menu.addAction("T-Test (Table Y)", lambda: self.show_ttest_window(h_y))
+            menu.addAction("Z-Test (Table Y)", lambda: self.show_ztest_window(h_y))
             menu.addSeparator()
-            data_y = self.table_list[1].handler.get_data()
+            data_y = self.table_list[1].handler.get_data_inputted()
             menu.addAction("Pearson R (X vs Y)",
                            lambda: safe_exec(lambda: h_x.pearson_r(data_y), "Pearson R"))
 
+        
         menu.exec(btn.mapToGlobal(btn.rect().bottomLeft()))
+
 
     # ── Navigation ─────────────────────────────────────────────────────────────
     def go_to_tables(self):
