@@ -161,11 +161,37 @@ class FileApp(QMainWindow):
         # KEY CHANGE: Using QHBoxLayout for horizontal alignment
 
     def handle_import(self):
-        # file, _ = QFileDialog.getOpenFileName(self, "Open File")
-        # if file: self.go_to_tables()
-        # For specific, files
         file, _ = QFileDialog.getOpenFileName(None, "Open CSV", "", "CSV Files (*.csv);;All Files(*)")
-        if file: self.go_to_tables()
+        
+        if not file:
+            return
+
+        # Go to table screen and ensure tables are initialized
+        self.go_to_tables()
+
+        # Try to load data into each existing table using its handler
+        errors = []
+
+        for table in self.table_list:
+            try:
+                table.handler.import_data(file)
+                # Reflect imported data into the QTableWidget cells
+                data = table.handler.get_data()
+                table.itemChanged.disconnect(table.sync)  # Prevent feedback loop
+                for row, val in enumerate(data):
+                    from PyQt6.QtWidgets import QTableWidgetItem
+                    item = QTableWidgetItem(str(val))
+                    table.setItem(row, 0, item)
+                table.itemChanged.connect(table.sync)
+            except KeyError:
+                errors.append(f"Column '{table.handler.get_data_name()}' not found in CSV.")
+            except Exception as e:
+                errors.append(str(e))
+
+        if errors:
+            self.result_display.setText("Import issues:\n" + "\n".join(errors))
+        else:
+            self.result_display.setText("CSV imported successfully.")
 
     def go_to_tables(self):
         while self.tables_layout.count():
