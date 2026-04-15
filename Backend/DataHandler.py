@@ -1,5 +1,5 @@
-from StatRelationCalculator import StatRelationCalculator
-from TestStatistic import TestStatisticCalculator
+from Backend.StatRelationCalculator import StatRelationCalculator
+from Backend.TestStatistic import TestStatisticCalculator
 import pandas as pd
 
 class DataHandler(StatRelationCalculator,TestStatisticCalculator):
@@ -16,6 +16,7 @@ class DataHandler(StatRelationCalculator,TestStatisticCalculator):
 
     def mod_data(self, index:int, data):
         data_list = self.get_data()
+
         #error handle
         if not (isinstance(data,(float,int))):
             raise ValueError("Only numeric values allowed")
@@ -26,6 +27,8 @@ class DataHandler(StatRelationCalculator,TestStatisticCalculator):
                 data_list.append(0)
 
         data_list[index] = data
+
+        print(data_list)
 
     def get_data_name(self):
         return self._data_name

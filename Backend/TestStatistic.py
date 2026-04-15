@@ -1,4 +1,4 @@
-from CentralTendencyCalculator import CentralTendencyCalculator
+from Backend.CentralTendencyCalculator import CentralTendencyCalculator
 
 class TestStatisticCalculator(CentralTendencyCalculator):
     def __init__(self):

@@ -1,4 +1,4 @@
-from BaseDataHandler import BaseDataHandler
+from Backend.BaseDataHandler import BaseDataHandler
 from scipy import stats
 
 class StatRelationCalculator(BaseDataHandler):
