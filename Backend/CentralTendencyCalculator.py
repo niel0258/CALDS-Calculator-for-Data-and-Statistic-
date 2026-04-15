@@ -6,24 +6,24 @@ class CentralTendencyCalculator(BaseDataHandler):
         super().__init__() 
 
     def mean(self):
-        return stat_mean(self.get_data())
+        return stat_mean(self.get_data_inputted())
 
     def median(self):
-        return stat_med(self.get_data())
+        return stat_med(self.get_data_inputted())
 
     def mode(self):
-        return stat_mode(self.get_data())
+        return stat_mode(self.get_data_inputted())
 
     #For Both items below: mode 1 is population and 2 is sample
     def sd(self,mode):
         if mode == 1:
-            return stat_pstdev(self.get_data())
+            return stat_pstdev(self.get_data_inputted())
         else:
-            return stat_stdev(self.get_data())
+            return stat_stdev(self.get_data_inputted())
 
     def var(self,mode):
         if mode == 1:
-            return stat_pvar(self.get_data())
+            return stat_pvar(self.get_data_inputted())
         else:
-            return stat_svar(self.get_data())
+            return stat_svar(self.get_data_inputted())
         

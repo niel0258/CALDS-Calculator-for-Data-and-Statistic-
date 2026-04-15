@@ -36,3 +36,12 @@ class BaseDataHandler():
 
     def get_data(self):
         return self._data_list
+
+    def get_data_inputted(self):
+        clean_data = []
+
+        for data in self._data_list:
+            if isinstance(data,float):
+                clean_data.append(data)
+        print(f"Clean data : {clean_data}")
+        return clean_data

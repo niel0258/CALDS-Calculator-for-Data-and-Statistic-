@@ -15,7 +15,7 @@ class StatRelationCalculator(BaseDataHandler):
         if other_data is None:
             raise ValueError("Must provide other_data for initial calculation.")
 
-        x_data = tuple(self.get_data())
+        x_data = tuple(self.get_data_inputted())
         y_data = tuple(other_data)
         #store data in memo
         key = (x_data, y_data)
