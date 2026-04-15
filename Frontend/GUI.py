@@ -210,13 +210,36 @@ class FileApp(QMainWindow):
             self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
             # self.styleSheet("background-color: #2b2b2b; color: white;")
             self.itemChanged.connect(self.sync)
+            #right shows a menu
+            self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+            self.customContextMenuRequested.connect(self.show_cell_menu)
 
         def sync(self, item):
             try:
-                val = float(item.text())
-                self.handler.mod_data(item.row(), val)
+                text = item.text().strip()
+                if text == "":
+                    self.handler.mod_data(item.row(), 0)  # treat blank as 0
+                else:
+                    val = float(text)
+                    self.handler.mod_data(item.row(), val)
             except (ValueError, AttributeError):
-                self.handler.mod_data(item.row(), None)
+                pass  # so this does not crash
+
+        def show_cell_menu(self, pos):
+            item = self.itemAt(pos)
+
+            if item is None:
+                return
+
+            menu = QMenu(self)
+            delete_action = menu.addAction("Clear Cell")
+            action = menu.exec(self.viewport().mapToGlobal(pos))
+
+            if action == delete_action:
+                self.itemChanged.disconnect(self.sync)
+                item.setText("")
+                self.handler.mod_data(item.row(), 0)
+                self.itemChanged.connect(self.sync)
 
     def add_new_table(self):
         count = len(self.table_list)
@@ -248,13 +271,20 @@ class FileApp(QMainWindow):
                 except Exception:
                     self.result_display.setText("Result: Invalid input / output")
 
+            #Formulas
             menu.addAction("Mean (Table X)", lambda: safe_exec(h_x.mean, "Mean"))
-            #ADD CENTRAL TENDENCIES TABLE X
+            menu.addAction("Median (Table X)", lambda: safe_exec(h_x.median, "Median"))
+            menu.addAction("Mode (Table X)",lambda: safe_exec(h_x.mode, "Mode"))
             menu.addAction("Std Dev (Table X)", lambda: safe_exec(lambda: h_x.sd(2), "SD"))
             
-            # Pearson's R appears if 2nd table exists
+            # Menu that shows when greater than 2
             if len(self.table_list) >= 2:
+                h_y = self.table_list[1].handler
                 #ADD CENTRAL TENDENCIES FOR TABLE Y
+                menu.addAction("Mean (Table Y)", lambda: safe_exec(h_y.mean, "Mean"))
+                menu.addAction("Median (Table Y)", lambda: safe_exec(h_y.median, "Median"))
+                menu.addAction("Mode (Table Y)",lambda: safe_exec(h_y.mode, "Mode"))
+                menu.addAction("Std Dev (Table Y)", lambda: safe_exec(lambda: h_y.sd(2), "SD"))
                 menu.addSeparator()
                 data_y = self.table_list[1].handler.get_data()
                 menu.addAction("Pearson R (X vs Y)", 
