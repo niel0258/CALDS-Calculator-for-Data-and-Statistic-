@@ -1,300 +1,294 @@
-import sys
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
-                             QPushButton, QLabel, QStackedWidget, QFileDialog, 
-                             QTableWidget, QHBoxLayout, QHeaderView, QScrollArea, QMenu)
+import sys, json, csv
+from PyQt6.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QVBoxLayout,
+    QPushButton, QLabel, QStackedWidget, QFileDialog,
+    QTableWidget, QHBoxLayout, QHeaderView, QScrollArea,
+    QFrame, QTableWidgetItem
+)
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QAction
-from Backend.DataHandler import DataHandler
-#PAKYU YOKO NA MABUHAY
-#FUCK YOU SHIT 
+
 
 class FileApp(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("CalDS Application")
-        # self.resize(1200, 700) # Wider default size for side-by-side tables
-        self.resize(500, 650)
-
+        self.setWindowTitle("CalDS")
+        self.resize(1200, 800)
         self.stack = QStackedWidget()
         self.setCentralWidget(self.stack)
+        self.tables = []
+        self.active_table = None
+        self.theme_mode = "dark"
+        self.make_menu()
+        self.make_workspace()
+        self.apply_theme()
 
-        self.init_menu_screen()
-        self.init_table_screen()
-
-    def init_menu_screen(self):
+    # menu 
+    def make_menu(self):
         page = QWidget()
         layout = QVBoxLayout(page)
-        button_layout = QHBoxLayout()
-
-        # Control Buttons
-        label_header = QLabel("[ CalDS Application ]")
-        label_header.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        label_header.setStyleSheet("""
-                                   font-size: 30px;
-                                   font-family arial;
-                                   font-weight: bold;
-                                   color: white;
-                                   """)
-
-        label = QLabel("Select an action:")
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
-        label.setStyleSheet("""
-                            font-family: Arial;
-                            font-weight: bold;
-                            font-size: 20px;
-                            padding: 30px;
-                            color: white;
-                            """)
-
-        btn_import = QPushButton("Import File")
-        btn_import.setStyleSheet("""
-                                QPushButton {
-                                background-color: #ff9f00;
-                                color: black;
-                                font-size: 15px;
-                                font-family arial;
-                                font-weight: bold;
-                                border-radius: 10px;
-                                }
-
-                                QPushButton:hover {
-                                background-color: rgba(30, 74, 141, 0.900);
-                                }
-                                """)
-        
-        btn_import.setFixedSize(200, 50)
-        btn_import.clicked.connect(self.handle_import)
-        
-        btn_new = QPushButton("Create New File")
-        btn_new.setFixedSize(200, 50)
-        btn_new.setStyleSheet("""
-                              QPushButton {
-                              background-color: rgba(28, 134, 184, 0.925);
-                              font-size: 14px;
-                              font-family: arial;
-                              border-radius: 10px;
-                              }
-                              QPushButton:hover {
-                              background-color: rgba(30, 74, 141, 0.900);
-                              }
-                              """)
-        btn_new.clicked.connect(self.go_to_tables)
-
-        exit_btn = QPushButton("Exit")
-        exit_btn.setFixedSize(100, 25)
-        exit_btn.setStyleSheet("""
-                               QPushButton:hover {
-                               background-color: rgba(35, 35, 35, 0.500);
-                               }
-                               """)
-        exit_btn.clicked.connect(QApplication.instance().quit)
-
-        layout.addStretch(1)
-        layout.addWidget(label_header)
-        layout.addStretch(1)
-        layout.addWidget(label)
-        button_layout.addWidget(btn_import)
-        button_layout.addWidget(btn_new)
-        layout.addLayout(button_layout)
-        layout.addStretch(1)
-        layout.addWidget(exit_btn, alignment=Qt.AlignmentFlag.AlignCenter)
-        layout.addStretch(4)
+        title = QLabel("CalDS")
+        title.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        title.setStyleSheet("font-size: 100px; font-weight: bold;")
+        subtitle = QLabel("Calculator for Data and Statistic System")
+        subtitle.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        subtitle.setStyleSheet("color:#888; font-size:16px;")
+        start_btn = QPushButton("Start")
+        start_btn.setFixedHeight(50)
+        start_btn.clicked.connect(self.open_workspace)
+        layout.addStretch()
+        layout.addWidget(title)
+        layout.addWidget(subtitle)
+        layout.addWidget(start_btn, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addStretch()
         self.stack.addWidget(page)
 
-    
-    def init_table_screen(self):
-        table_page = QWidget()
-        table_page.setStyleSheet("background-color: #101010;")
-        self.stack.addWidget(table_page)
-        layout = QVBoxLayout(table_page)
-        self.table_list = []
+    # main 
+    def make_workspace(self):
+        self.page = QWidget()
+        main = QVBoxLayout(self.page)
+        self.stack.addWidget(self.page)
 
-        self.result_display = QLabel("Add a table and enter data to begin.")
-        self.result_display.setWordWrap(True)
-        self.result_display.setStyleSheet("color: #ff9f00; font-size: 14px; padding: 10px; background: #222; border-radius: 5px;")
-        layout.addWidget(self.result_display)
+        # header
+        header = QFrame()
+        header.setObjectName("Header")
+        header.setFixedHeight(50)
+        h = QHBoxLayout(header)
+        title = QLabel("CalDS Dashboard")
+        self.status = QLabel("System ready")
+        h.addWidget(title)
+        h.addStretch()
+        h.addWidget(self.status)
+        main.addWidget(header)
 
-        # Control Buttons
+        # buttons 
+        row = QHBoxLayout()
+        self.btn_add = QPushButton("Add Table")
+        self.btn_remove = QPushButton("Remove")
+        btn_clear = QPushButton("Clear")
+        btn_save = QPushButton("Save")
+        btn_load = QPushButton("Load")
+        btn_export = QPushButton("Export CSV")
+        btn_theme = QPushButton("Theme")
+        btn_back = QPushButton("Back")
+        self.btn_add.clicked.connect(self.add_table)
+        self.btn_remove.clicked.connect(self.remove_table)
+        btn_clear.clicked.connect(self.clear_table)
+        btn_save.clicked.connect(self.save_project)
+        btn_load.clicked.connect(self.load_project)
+        btn_export.clicked.connect(self.export_csv)
+        btn_theme.clicked.connect(self.switch_theme)
+        btn_back.clicked.connect(lambda: self.stack.setCurrentIndex(0))
+        for b in [self.btn_add, self.btn_remove, btn_clear, btn_save, btn_load, btn_export, btn_theme, btn_back]:
+            b.setCursor(Qt.CursorShape.PointingHandCursor)
+        row.addWidget(self.btn_add)
+        row.addWidget(self.btn_remove)
+        row.addWidget(btn_clear)
+        row.addWidget(btn_save)
+        row.addWidget(btn_load)
+        row.addWidget(btn_export)
+        row.addWidget(btn_theme)
+        row.addStretch()
+        row.addWidget(btn_back)
+        main.addLayout(row)
 
-        controls = QHBoxLayout()
-        self.add_btn = QPushButton("Add Table (Max 3)")
-        self.add_btn.setStyleSheet("""
-                                   QPushButton {
-                                   background-color: darkblue;
-                                   }
-                                   """)
-        self.add_btn.clicked.connect(self.add_new_table)
+        # table 
+        scroll = QScrollArea()
+        scroll.setWidgetResizable(True)
+        self.content = QWidget()
+        self.container = QHBoxLayout(self.content)
+        scroll.setWidget(self.content)
+        main.addWidget(scroll)
 
-        back_btn = QPushButton("Back")
-        back_btn.setStyleSheet ("""
-                                QPushButton {
-                                background-color: rgba(37, 37, 37, 0.900);
-                                }
-                                """)
-        back_btn.clicked.connect(lambda: self.stack.setCurrentIndex(0))
+    # create 
+    def create_table(self, data=None):
+        table = QTableWidget(32, 2)
+        table.setHorizontalHeaderLabels(["Key", "Value"])
+        table.setMinimumSize(450, 520)
+        table.verticalHeader().setVisible(False)
+        table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
+        table.itemClicked.connect(lambda: self.select_table(table))
+        if data:
+            for r, row in enumerate(data):
+                for c, val in enumerate(row):
+                    if val:
+                        table.setItem(r, c, QTableWidgetItem(val))
+        return table
 
-        formula_btn = QPushButton("Formula") # Calculate Stats
-        formula_btn.setStyleSheet("""
-                                  QPushButton {
-                                  background-color: green;
-                                  }
-                                  """)
+    # add 
+    def add_table(self):
+        table = self.create_table()
+        self.container.addWidget(table)
+        self.tables.append(table)
+        self.select_table(table)
+        self.status.setText(f"Table created ({len(self.tables)} total)")
 
-        formula_btn.clicked.connect(lambda: self.show_menu(formula_btn))
-        
-        controls.addWidget(self.add_btn)
-        controls.addWidget(back_btn)
-        controls.addWidget(formula_btn)
-        layout.addLayout(controls)
+    # select 
+    def select_table(self, table):
+        self.active_table = table
+        self.status.setText("Table selected")
 
-        # Scroll Area to handle overflow when tables are added side-by-side
+    # remove 
+    def remove_table(self):
+        if not self.tables:
+            return
+        table = self.active_table or self.tables[-1]
+        self.container.removeWidget(table)
+        table.deleteLater()
+        self.tables.remove(table)
+        self.active_table = self.tables[-1] if self.tables else None
+        self.status.setText(f"Table removed ({len(self.tables)} remaining)")
 
-        self.scroll = QScrollArea()
-        self.scroll_content = QWidget()
-        self.tables_layout = QHBoxLayout(self.scroll_content)
-        self.scroll.setWidget(self.scroll_content)
-        self.scroll.setWidgetResizable(True)
-        layout.addWidget(self.scroll)
+    # clear 
+    def clear_table(self):
+        if self.active_table:
+            self.active_table.clearContents()
+            self.status.setText("Table cleared")
 
-        
-        # KEY CHANGE: Using QHBoxLayout for horizontal alignment
-
-    def handle_import(self):
-        file, _ = QFileDialog.getOpenFileName(None, "Open CSV", "", "CSV Files (*.csv);;All Files(*)")
-        
+    # export csv
+    def export_csv(self):
+        if not self.active_table:
+            return
+        file, _ = QFileDialog.getSaveFileName(self, "Export CSV", "", "CSV (*.csv)")
         if not file:
             return
+        with open(file, "w", newline="") as f:
+            writer = csv.writer(f)
+            for r in range(self.active_table.rowCount()):
+                row = []
+                for c in range(self.active_table.columnCount()):
+                    item = self.active_table.item(r, c)
+                    row.append(item.text() if item else "")
+                writer.writerow(row)
+        self.status.setText("CSV exported successfully")
 
-        # Go to table screen and ensure tables are initialized
-        self.go_to_tables()
+    # save 
+    def save_project(self):
+        file, _ = QFileDialog.getSaveFileName(self, "Save Project", "", "JSON (*.json)")
+        if not file:
+            return
+        data = []
+        for t in self.tables:
+            temp = []
+            for r in range(t.rowCount()):
+                row = []
+                for c in range(t.columnCount()):
+                    item = t.item(r, c)
+                    row.append(item.text() if item else "")
+                temp.append(row)
+            data.append(temp)
 
-        # Try to load data into each existing table using its handler
-        errors = []
+        with open(file, "w") as f:
+            json.dump(data, f)
+        self.status.setText("Project saved successfully")
 
-        for table in self.table_list:
-            try:
-                table.handler.import_data(file)
-                # Reflect imported data into the QTableWidget cells
-                data = table.handler.get_data()
-                table.itemChanged.disconnect(table.sync)  # Prevent feedback loop
-                for row, val in enumerate(data):
-                    from PyQt6.QtWidgets import QTableWidgetItem
-                    item = QTableWidgetItem(str(val))
-                    table.setItem(row, 0, item)
-                table.itemChanged.connect(table.sync)
-            except KeyError:
-                errors.append(f"Column '{table.handler.get_data_name()}' not found in CSV.")
-            except Exception as e:
-                errors.append(str(e))
+    # load 
+    def load_project(self):
+        file, _ = QFileDialog.getOpenFileName(self, "Load Project", "", "JSON (*.json)")
+        if not file:
+            return
+        with open(file, "r") as f:
+            data = json.load(f)
+        for t in self.tables:
+            self.container.removeWidget(t)
+            t.deleteLater()
+        self.tables = []
+        for tdata in data:
+            table = self.create_table(tdata)
+            self.container.addWidget(table)
+            self.tables.append(table)
+        self.active_table = self.tables[0] if self.tables else None
+        self.status.setText("Project loaded successfully")
 
-        if errors:
-            self.result_display.setText("Import issues:\n" + "\n".join(errors))
-        else:
-            self.result_display.setText("CSV imported successfully.")
+    # switch theme
+    def switch_theme(self):
+        self.theme_mode = "light" if self.theme_mode == "dark" else "dark"
+        self.apply_theme()
+    def apply_theme(self):
+        self.setStyleSheet(self.dark() if self.theme_mode == "dark" else self.light())
 
-    def go_to_tables(self):
-        while self.tables_layout.count():
-            item = self.tables_layout.takeAt(0)
-            if item.widget():
-                item.widget().deleteLater()
+    # dark theme
+    def dark(self):
+        return """
+        QWidget { background:#0B0B0B; color:#EAEAEA; }
+        QFrame#Header {
+            background:#121212;
+            border-bottom:1px solid #222;
+        }
+        QPushButton {
+            background:#151515;
+            border:1px solid #2A2A2A;
+            padding:8px;
+            border-radius:8px;
+        }
+        QPushButton:hover {
+            background:#1C1C1C;
+        }
+        QTableWidget {
+            background:#121212;
+            border:1px solid #2A2A2A;
+            gridline-color:#3A3A3A;
+        }
+        QTableWidget::item {
+            border-right:1px solid #2A2A2A;
+            border-bottom:1px solid #2A2A2A;
+            padding:4px;
+        }
+        QTableWidget::item:selected {
+            background:#2F2F2F;
+        }
+        QHeaderView::section {
+            background:#151515;
+            border:1px solid #2A2A2A;
+            padding:6px;
+            color:#BFBFBF;
+        }
+        """
 
-        self.add_btn.setEnabled(True)
-        self.add_new_table()
+    # light theme
+    def light(self):
+        return """
+        QWidget { background:#F5F5F5; color:#111; }
+        QFrame#Header {
+            background:#FFFFFF;
+            border-bottom:1px solid #DDD;
+        }
+        QPushButton {
+            background:#FFFFFF;
+            border:1px solid #CCC;
+            padding:8px;
+            border-radius:8px;
+        }
+        QPushButton:hover {
+            background:#F0F0F0;
+        }
+        QTableWidget {
+            background:#FFFFFF;
+            border:1px solid #D0D0D0;
+            gridline-color:#CFCFCF;
+        }
+        QTableWidget::item {
+            border-right:1px solid #E0E0E0;
+            border-bottom:1px solid #E0E0E0;
+            padding:4px;
+        }
+        QTableWidget::item:selected {
+            background:#DADADA;
+        }
+        QHeaderView::section {
+            background:#F2F2F2;
+            border:1px solid #D0D0D0;
+            padding:6px;
+        }
+        """
+
+    # open main workspace
+    def open_workspace(self):
         self.stack.setCurrentIndex(1)
 
-    class IntegratedTable(QTableWidget):
-        def __init__(self, label):
-            super().__init__(32,1)
-            self.setHorizontalHeaderLabels([label])
-            self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
-            # self.styleSheet("background-color: #2b2b2b; color: white;")
-            self.itemChanged.connect(self.sync)
-            #right shows a menu
-            self.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
-            self.customContextMenuRequested.connect(self.show_cell_menu)
 
-        def sync(self, item):
-            try:
-                text = item.text().strip()
-                if text == "":
-                    self.handler.mod_data(item.row(), 0)  # treat blank as 0
-                else:
-                    val = float(text)
-                    self.handler.mod_data(item.row(), val)
-            except (ValueError, AttributeError):
-                pass  # so this does not crash
-
-        def show_cell_menu(self, pos):
-            item = self.itemAt(pos)
-
-            if item is None:
-                return
-
-            menu = QMenu(self)
-            delete_action = menu.addAction("Clear Cell")
-            action = menu.exec(self.viewport().mapToGlobal(pos))
-
-            if action == delete_action:
-                self.itemChanged.disconnect(self.sync)
-                item.setText("")
-                self.handler.mod_data(item.row(), 0)
-                self.itemChanged.connect(self.sync)
-
-    def add_new_table(self):
-        count = len(self.table_list)
-        if count < 3:
-            label = f"Data {'X' if count == 0 else 'Y' if count == 1 else 'Z'}"
-            t = self.IntegratedTable(label)
-
-            # Assign a DataHandler to the table
-            t.handler = DataHandler(label)
-
-            self.table_list.append(t)
-            self.tables_layout.addWidget(t)
-            if len(self.table_list) == 3:
-                self.add_btn.setEnabled(False)
-
-    def show_menu(self, btn):
-            if not self.table_list:
-                self.result_display.setText("Invalid: No tables exist.")
-                return
-                
-            menu = QMenu(self)
-            h_x = self.table_list[0].handler # Always use Table 1 as primary X
-            
-            # Helper to safely execute and display
-            def safe_exec(func, name):
-                try:
-                    res = func() #Result is the value return by the function
-                    self.result_display.setText(f"{name}: {res:.4f}") #Rounded to 4 decimal places
-                except Exception:
-                    self.result_display.setText("Result: Invalid input / output")
-
-            #Formulas
-            menu.addAction("Mean (Table X)", lambda: safe_exec(h_x.mean, "Mean"))
-            menu.addAction("Median (Table X)", lambda: safe_exec(h_x.median, "Median"))
-            menu.addAction("Mode (Table X)",lambda: safe_exec(h_x.mode, "Mode"))
-            menu.addAction("Std Dev (Table X)", lambda: safe_exec(lambda: h_x.sd(2), "SD"))
-            
-            # Menu that shows when greater than 2
-            if len(self.table_list) >= 2:
-                h_y = self.table_list[1].handler
-                #ADD CENTRAL TENDENCIES FOR TABLE Y
-                menu.addAction("Mean (Table Y)", lambda: safe_exec(h_y.mean, "Mean"))
-                menu.addAction("Median (Table Y)", lambda: safe_exec(h_y.median, "Median"))
-                menu.addAction("Mode (Table Y)",lambda: safe_exec(h_y.mode, "Mode"))
-                menu.addAction("Std Dev (Table Y)", lambda: safe_exec(lambda: h_y.sd(2), "SD"))
-                menu.addSeparator()
-                data_y = self.table_list[1].handler.get_data()
-                menu.addAction("Pearson R (X vs Y)", 
-                            lambda: safe_exec(lambda: h_x.pearson_r(data_y), "Pearson R"))
-                
-            menu.exec(btn.mapToGlobal(btn.rect().bottomLeft()))
-
+# run app
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = FileApp()
-    window.setStyleSheet("background-color: rgba(16,16,16,0.829)")
     window.show()
     sys.exit(app.exec())
