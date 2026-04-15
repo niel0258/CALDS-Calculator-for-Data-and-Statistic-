@@ -17,14 +17,14 @@ This makes it easier to calculate a chosen statistic of the given data
 - Currently can calculate central tendencies, t and z tests
 
 ## Languages used
-- Python
+- `Python`
 
 ## Powered by the following modules:
 - Python:
-  - PyQT6 for the GUI
-  - pandas for the CSV importing and exporting
-  - statistics for calculating central tendencies
-  - scipy for t and z test statistics
+  - `PyQT6` for the GUI
+  - `pandas` for the CSV importing and exporting
+  - `statistics` for calculating central tendencies
+  - `scipy` for t and z test statistics
 
 ## Running of file
 - If you are on Windows OS:
