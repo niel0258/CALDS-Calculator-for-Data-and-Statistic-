@@ -11,10 +11,10 @@ The user can enter data into the program's rows, like a spreadsheet. However, un
 This makes it easier to calculate a chosen statistic of the given data
 
 ## <h1 align="center">Features</h1>
-- Let's the user input numerical data in the rows of the program
-- Import from and export to a CSV file
-- Calculates a chosen statistic by the user
-- Currently can calculate central tendencies, t and z tests
+- ⭐Let's the user input numerical data in the rows of the program.⭐
+- ⭐Import from and export to a CSV file.⭐
+- ⭐Calculates a chosen statistic by the user.⭐
+- ⭐Currently can calculate central tendencies, t and z tests.⭐
 
 ## <h1 align="center">Languages Used</h1> 
 - `Python`
