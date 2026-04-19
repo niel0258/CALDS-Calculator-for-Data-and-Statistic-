@@ -41,3 +41,4 @@ class StatDeviationCalculator(BaseDataHandler):
     def both_std(self):
         self.__calc_std()
         return self._sample_std, self._pop_std
+        

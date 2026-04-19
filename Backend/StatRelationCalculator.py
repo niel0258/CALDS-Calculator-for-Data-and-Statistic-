@@ -3,7 +3,7 @@ from scipy import stats
 
 class StatRelationCalculator(BaseDataHandler):
     def __init__(self):
-        super().__init__() 
+        super().__init__()
         self._slope = None
         self._intercept = None
         self._r = None
@@ -13,19 +13,21 @@ class StatRelationCalculator(BaseDataHandler):
 
     def __calc_rel(self, other_data):
         if other_data is None:
-            raise ValueError("Must provide other_data for initial calculation.")
-
+            return 0
+        
         x_data = tuple(self.get_data_inputted())
-        y_data = tuple(other_data)
-        #store data in memo
+        y_data = tuple(other_data)#must pass a "clean" tuple, meaning no nan values 
+        
+        # Store data in memo
         key = (x_data, y_data)
-        #avoids recalculation
+        
+        # Avoids recalculation
         if key in self.__data_memo:
             result = self.__data_memo[key]
         else:
             result = stats.linregress(x_data, y_data)
             self.__data_memo[key] = result
-
+        
         self._slope = result.slope
         self._intercept = result.intercept
         self._r = result.rvalue
