@@ -27,7 +27,7 @@ This makes it easier to calculate a chosen statistic of the given data
   - `scipy` for t and z test statistics, calculating standard deviations
 
 ## Running of file
-- If you are on Windows OS:
+- If you are on Windows OS 🪟:
  - Run the `run_prog.bat.`
 - If you are on a Unix-like OS:
   - Use `cd` to locate the file path of the `run_prog.sh.`
