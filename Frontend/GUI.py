@@ -272,6 +272,7 @@ class FileApp(QMainWindow):
                 table.itemChanged.connect(table.sync)
             except Exception as e:
                 errors.append(f"{table.handler.get_data_name()}: {str(e)}")
+
     def export_csv(self):
         if not self.table_list:#check no tables
             self.result_display.setText("No tables to export.")
@@ -320,6 +321,20 @@ class FileApp(QMainWindow):
             except Exception as e:
                 self.result_display.setText(f"Z-Test error: {e}")
 
+    def show_linear_reg_window(self, table, other_table):
+        dialog = InputDataWindow(
+            self,
+            title="Linear Regression",
+            prompt="Enter value (x):"
+        )
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            try:
+                res = table.calc_possible_y(dialog.value, other_table)
+                print(res)
+                self.result_display.setText(f"Possible value for y (x={dialog.value}): {res:.4f}")
+            except Exception as e:
+                self.result_display.setText(f"Linear Regression Error: {e}")   
+
     # ==================== FORMULA MENU ============================
 
     def show_formula_menu(self, btn):
@@ -355,9 +370,12 @@ class FileApp(QMainWindow):
             menu.addAction("T-Test (Table Y)", lambda: self.show_ttest_window(h_y))
             menu.addAction("Z-Test (Table Y)", lambda: self.show_ztest_window(h_y))
             menu.addSeparator()
-            data_y = self.table_list[1].handler.get_data_inputted()
-            menu.addAction("Pearson R (X vs Y)",
-                           lambda: safe_exec(lambda: h_x.pearson_r(data_y), "Pearson R"))
+            if len(self.table_list[0].handler.get_data_inputted()) == len(self.table_list[1].handler.get_data_inputted()):#Should work because max is 2, should be replaced when working with more than one table
+                data_y = self.table_list[1].handler.get_data_inputted()
+                menu.addAction("Pearson R (X vs Y)",
+                            lambda: safe_exec(lambda: h_x.pearson_r(data_y), "Pearson R"))
+                menu.addAction("Linear Regression",
+                            lambda: self.show_linear_reg_window(h_x,data_y))
 
         
         menu.exec(btn.mapToGlobal(btn.rect().bottomLeft()))
