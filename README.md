@@ -11,16 +11,16 @@
 This makes it easier to calculate a chosen statistic of the given data.</p>
 
 ## <h1 align="center">✨Features✨</h1>
-- ⭐Let's the user input numerical data in the rows of the program.⭐
-- ⭐Import from and export to a CSV file.⭐
-- ⭐Calculates a chosen statistic by the user.⭐
-- ⭐Currently can calculate central tendencies, t and z tests.⭐
+- ⭐Let's the user input numerical data in the rows of the program.
+- ⭐Import from and export to a CSV file.
+- ⭐Calculates a chosen statistic by the user.
+- ⭐Currently can calculate central tendencies, t and z tests.
 
 ## <h1 align="center">📝Languages Used📝</h1> 
 - 🐍`Python`🐍
 
 ## <h1 align="center">🔌Powered by the Following Modules:🔌</h1> 
-- Python:
+- `Python:`⤵
   - 🧩`PyQT6` for the GUI.
   - 🐼`pandas` for the CSV importing and exporting.
   - 📈`statistics` for calculating central tendencies such as mean, median, and mode.
