@@ -1,4 +1,4 @@
-# Calculator for Data and Statistics
+# <h1 align="center">Calculator for Data and Statistics</h1> 
 ![image_alt](https://raw.githubusercontent.com/marcjhowellbungag-afk/trash/a9cb6bb484023d4c00dac25bc6ce839fc56c9826/logo.jpg?token=CCFJ4I2OOOHE5GTCK3S4HLTJ4UJ76)
 This program lets you calculate your chosen statistic based on your given data.
 <br>
