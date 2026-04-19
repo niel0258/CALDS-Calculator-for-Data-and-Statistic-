@@ -1,9 +1,10 @@
 from Backend.StatRelationCalculator import StatRelationCalculator
 from Backend.TestStatistic import TestStatisticCalculator
+from Backend.CentralTendencyCalculator import CentralTendencyCalculator
 import pandas as pd
 from math import nan,isnan
 
-class DataHandler(StatRelationCalculator,TestStatisticCalculator):
+class DataHandler(StatRelationCalculator,TestStatisticCalculator,CentralTendencyCalculator):
     def __init__(self,data_name):
         super().__init__()
         self.replace_data([float(nan)]) 

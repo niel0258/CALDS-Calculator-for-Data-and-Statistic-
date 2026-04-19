@@ -1,6 +1,6 @@
-from Backend.CentralTendencyCalculator import CentralTendencyCalculator
+from Backend.StandardDevCalculator import StatDeviationCalculator
 
-class TestStatisticCalculator(CentralTendencyCalculator):
+class TestStatisticCalculator(StatDeviationCalculator):
     def __init__(self):
         super().__init__() 
 
