@@ -1,4 +1,5 @@
 import sys
+import math
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout,
     QPushButton, QLabel, QStackedWidget, QFileDialog,
@@ -56,7 +57,7 @@ class FileApp(QMainWindow):
         self.make_workspace()
         self.apply_theme()
 
-    #Menu Screen
+    #==================== Menu Screen ===============================
     def make_menu(self):
         page = QWidget()
         layout = QVBoxLayout(page)
@@ -101,7 +102,7 @@ class FileApp(QMainWindow):
 
         self.stack.addWidget(page)
 
-    #  Workspace screen
+    #  =============== Workspace screen =====================
     def make_workspace(self):
         page = QWidget()
         main = QVBoxLayout(page)
@@ -182,7 +183,7 @@ class FileApp(QMainWindow):
             try:
                 text = item.text().strip()
                 if text == "":
-                    self.handler.mod_data(item.row(), 0)
+                    self.handler.mod_data(item.row(), float(math.nan))
                 else:
                     self.handler.mod_data(item.row(), float(text))
             except (ValueError, AttributeError):
@@ -201,7 +202,7 @@ class FileApp(QMainWindow):
                 self.handler.mod_data(item.row(), 0)
                 self.itemChanged.connect(self.sync)
 
-    # Table management 
+    # ==================== TABLE =========================
 
     def add_new_table(self):
         if len(self.table_list) >= self._max_tables:
@@ -241,33 +242,36 @@ class FileApp(QMainWindow):
             self.active_table.handler = DataHandler(label)
             self.status.setText("Table cleared")
 
-    # CSV import / export 
+    # ====================== CSV import / export =========================
     def handle_import(self):
         file, _ = QFileDialog.getOpenFileName(self, "Import CSV", "", "CSV Files (*.csv);;All Files (*)")
         if not file:
             return
         self.go_to_tables()
         errors = []
+        
+
         for table in self.table_list:
             try:
-                # Uses DataHandler.import_data — matches column by data name
                 table.handler.import_data(file)
                 data = table.handler.get_data()
+                
                 table.itemChanged.disconnect(table.sync)
-                for row, val in enumerate(data):
-                    table.setItem(row, 0, QTableWidgetItem(str(val)))
-                table.itemChanged.connect(table.sync)
-            except KeyError:
-                errors.append(f"Column '{table.handler.get_data_name()}' not found in CSV.")
-            except Exception as e:
-                errors.append(str(e))
-        if errors:
-            self.result_display.setText("Import issues:\n" + "\n".join(errors))
-            self.status.setText("Import finished with errors")
-        else:
-            self.result_display.setText("CSV imported successfully.")
-            self.status.setText("CSV imported")
+                table.clearContents() # Clear old data first
 
+                for row, val in enumerate(data):
+                    # Skip if value is NaN
+                    if val is None or (isinstance(val, float) and math.isnan(val)):
+                        continue 
+                    
+                    # Format: 'g' removes .0 from 5.0 but keeps 5.5
+                    formatted_val = f"{val:g}"
+                    table.setItem(row, 0, QTableWidgetItem(formatted_val))
+                    # ----------------------------------------------------
+
+                table.itemChanged.connect(table.sync)
+            except Exception as e:
+                errors.append(f"{table.handler.get_data_name()}: {str(e)}")
     def export_csv(self):
         if not self.table_list:#check no tables
             self.result_display.setText("No tables to export.")
@@ -275,6 +279,8 @@ class FileApp(QMainWindow):
         file, _ = QFileDialog.getSaveFileName(self, "Export CSV", "", "CSV (*.csv)")
         if not file:
             return
+        elif not file.endswith(".csv"):
+            file += ".csv"
         try:
             primary = self.table_list[0].handler
             # Pass remaining tables as other_datas if they exist
@@ -286,6 +292,8 @@ class FileApp(QMainWindow):
             self.status.setText("Export failed")
             self.result_display.setText(f"Export error: {e}")
 
+
+    #===================== NEW WINDOWS ===============================
     def show_ttest_window(self,table):
         dialog = InputDataWindow(
             self,
@@ -311,7 +319,9 @@ class FileApp(QMainWindow):
                 self.result_display.setText(f"Z-Test (x={dialog.value}): {res:.4f}")
             except Exception as e:
                 self.result_display.setText(f"Z-Test error: {e}")
-    # Formula menu
+
+    # ==================== FORMULA MENU ============================
+
     def show_formula_menu(self, btn):
         if not self.table_list:
             self.result_display.setText("Invalid: No tables exist.")
@@ -330,7 +340,8 @@ class FileApp(QMainWindow):
         menu.addAction("Mean (Table X)",    lambda: safe_exec(h_x.mean, "Mean"))
         menu.addAction("Median (Table X)",  lambda: safe_exec(h_x.median, "Median"))
         menu.addAction("Mode (Table X)",    lambda: safe_exec(h_x.mode, "Mode"))
-        menu.addAction("Std Dev (Table X)", lambda: safe_exec(lambda: h_x.sd(2), "SD"))
+        menu.addAction("Std Dev:Population (Table X)", lambda: safe_exec(lambda: h_x.population_std(), "SD"))
+        menu.addAction("Std Dev:Sample (Table X)", lambda: safe_exec(lambda: h_x.sample_std(), "SD"))
         menu.addAction("T-Test (Table X)", lambda: self.show_ttest_window(h_x))
         menu.addAction("Z-Test (Table X)", lambda: self.show_ztest_window(h_x))
 
@@ -339,7 +350,8 @@ class FileApp(QMainWindow):
             menu.addAction("Mean (Table Y)",    lambda: safe_exec(h_y.mean, "Mean"))
             menu.addAction("Median (Table Y)",  lambda: safe_exec(h_y.median, "Median"))
             menu.addAction("Mode (Table Y)",    lambda: safe_exec(h_y.mode, "Mode"))
-            menu.addAction("Std Dev (Table Y)", lambda: safe_exec(lambda: h_y.sd(2), "SD"))
+            menu.addAction("Std Dev:Population (Table Y)", lambda: safe_exec(lambda: h_x.population_std(), "SD"))
+            menu.addAction("Std Dev:Sample (Table Y)", lambda: safe_exec(lambda: h_x.sample_std(), "SD"))
             menu.addAction("T-Test (Table Y)", lambda: self.show_ttest_window(h_y))
             menu.addAction("Z-Test (Table Y)", lambda: self.show_ztest_window(h_y))
             menu.addSeparator()
@@ -351,13 +363,15 @@ class FileApp(QMainWindow):
         menu.exec(btn.mapToGlobal(btn.rect().bottomLeft()))
 
 
-    # ── Navigation ─────────────────────────────────────────────────────────────
+    # ============= NAVI =====================================
+
     def go_to_tables(self):
         if not self.table_list:
             self.add_new_table()
         self.stack.setCurrentIndex(1)
 
-    # ── Theme ──────────────────────────────────────────────────────────────────
+
+    # ====================== THEME ===========================
     def switch_theme(self):
         self.theme_mode = "light" if self.theme_mode == "dark" else "dark"
         self.apply_theme()
