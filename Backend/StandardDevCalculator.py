@@ -1,15 +1,16 @@
-from BaseDataHandler import BaseDataHandler
+from Backend.BaseDataHandler import BaseDataHandler
 from scipy import stats
 
 class StatDeviationCalculator(BaseDataHandler):
 
     def __init__(self):
+        super().__init__()
         self._sample_std = None
         self._pop_std = None
         self.__data_memo = {}
 
     def __calc_std(self):
-        data = tuple(self.get_data())
+        data = tuple(self.get_data_inputted())
 
         if len(data) == 0:
             raise ValueError("No data available, please provide sufficient data.")
