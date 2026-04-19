@@ -1,4 +1,6 @@
 #FATHER OF ALL CLASSES
+from math import isnan
+
 class BaseDataHandler():
     def __init__(self):
         self._data_list = [0]
@@ -37,11 +39,13 @@ class BaseDataHandler():
     def get_data(self):
         return self._data_list
 
-    def get_data_inputted(self):
-        clean_data = []
+    def clean_data(self, list_of_data):
+        cleaned_data = []
+        for data in list_of_data:
+            if (not isnan(data)):
+                cleaned_data.append(data)
+        print(f"Clean data: {cleaned_data}")
+        return cleaned_data
 
-        for data in self._data_list:
-            if isinstance(data,float):
-                clean_data.append(data)
-        print(f"Clean data : {clean_data}")
-        return clean_data
+    def get_data_inputted(self):
+        return self.clean_data(self._data_list)
