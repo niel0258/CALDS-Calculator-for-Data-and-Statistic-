@@ -3,8 +3,9 @@
 This program lets you calculate your chosen statistic based on your given data.
 <br>
 <br>
-<p align="center">⫘⫘⫘⫘⫘<b>[Currently IN_DEV]</b>⫘⫘⫘⫘⫘</p>
+<p align="center">⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘<b>[Currently IN_DEV]</b>⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘⫘</p>
 <br>
+
 ## <h1 align="center">🔎Overview🔎</h1>
 The user can enter data into the program's rows, like a spreadsheet. However, unlike normal spreadsheets, this program offers a user-friendly graphical interface. 
 This makes it easier to calculate a chosen statistic of the given data
