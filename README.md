@@ -16,17 +16,17 @@ This makes it easier to calculate a chosen statistic of the given data
 - ⭐Calculates a chosen statistic by the user.⭐
 - ⭐Currently can calculate central tendencies, t and z tests.⭐
 
-## <h1 align="center">Languages Used</h1> 
-- `Python`
+## <h1 align="center">📝Languages Used📝</h1> 
+- 🐍`Python`🐍
 
-## <h1 align="center">Powered by the Following Modules:</h1> 
+## <h1 align="center">🔌Powered by the Following Modules:🔌</h1> 
 - Python:
   - `PyQT6` for the GUI
   - `pandas` for the CSV importing and exporting
   - `statistics` for calculating central tendencies such as mean, median, and mode
   - `scipy` for t and z test statistics, calculating standard deviations
 
-## <h1 align="center">Running of File</h1> 
+## <h1 align="center">🏃‍♂️‍➡️📂Running of File📂🏃‍♂️</h1> 
 - If you are on Windows OS 🪟:
   - 👉Run the `run_prog.bat.`
 - If you are on a Unix-like OS 🐧:
