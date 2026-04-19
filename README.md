@@ -3,7 +3,7 @@
 This program lets you calculate your chosen statistic based on your given data.
 <br>
 <br>
-**[Currently IN_DEV]**
+<p align="center">**[Currently IN_DEV]**</p>
 <br>
 
 ## <h1 align="center">🔎Overview🔎</h1>
