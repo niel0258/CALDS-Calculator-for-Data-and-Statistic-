@@ -3,7 +3,6 @@ from Backend.TestStatistic import TestStatisticCalculator
 import pandas as pd
 from math import nan,isnan
 
-
 class DataHandler(StatRelationCalculator,TestStatisticCalculator):
     def __init__(self,data_name):
         super().__init__()

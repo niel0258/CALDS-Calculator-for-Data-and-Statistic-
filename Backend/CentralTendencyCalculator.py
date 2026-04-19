@@ -1,7 +1,7 @@
-from Backend.StandardDevCalculator import StatDeviationCalculator
+from Backend.BaseDataHandler import BaseDataHandler
 from statistics import mean as stat_mean,median as stat_med,mode as stat_mode
 
-class CentralTendencyCalculator(StatDeviationCalculator):
+class CentralTendencyCalculator(BaseDataHandler):
     def __init__(self):
         super().__init__() 
 
