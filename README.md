@@ -1,4 +1,4 @@
-# <h1 align="center">꧁⎝ 𓆩༺🖩Calculator for Data and Statistics🖩༻𓆪 ⎠꧂</h1> 
+# <h1 align="center">꧁⎝ ༺🖩Calculator for Data and Statistics🖩༻ ⎠꧂</h1> 
 ![My image](logo.jpg)
 <p align="center"><i>This program lets you calculate your chosen statistic based on your given data!</i></p>
 <br>
