@@ -199,7 +199,7 @@ class FileApp(QMainWindow):
             if action == delete_action:
                 self.itemChanged.disconnect(self.sync)
                 item.setText("")
-                self.handler.mod_data(item.row(), 0)
+                self.handler.mod_data(item.row(), math.nan)
                 self.itemChanged.connect(self.sync)
 
     # ==================== TABLE =========================
