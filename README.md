@@ -3,7 +3,7 @@
 <p align="center"><i>This program lets you calculate your chosen statistic based on your given data!</i></p>
 <br>
 <br>
-<p align="center">──── ୨୧ ────<b>[CURRENTLY IN_DEV]</b>──── ୨୧ ────</p>
+<p align="center">──── ୨୧ ────<b>AVAILABLE FOR TESTING</b>──── ୨୧ ────</p>
 <br>
 
 ## <h1 align="center">🔎Overview🔎</h1>
